@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scoopick"
+version = "0.0.0"
+description = "SCreen COOrdinate PICKer."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Ernesto Casablanca", email = "casablancaernesto@gmail.com" },
+]
+keywords = [
+    "scoopick",
+    "desktop",
+    "application",
+    "screenshot",
+    "screen",
+    "coordinate",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+
+dependencies = ["PySide6>=6.0.0", "pillow>=11.3.0", "keyboard>=0.13.5"]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "isort"]
+
+[project.scripts]
+scoopick = "scoopick.__main__:main"
+ui = "scoopick.__main__:ui"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-q"
+testpaths = ["tests"]
