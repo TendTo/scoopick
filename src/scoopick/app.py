@@ -108,7 +108,7 @@ class App(QWidget):
     def _mouse_to_screen_position(self, event: QMouseEvent):
         if self._pixmap.is_null:
             return -1, -1
-        x, y = event.x(), event.y()
+        x, y = event.position().toPoint().x(), event.position().toPoint().y()
         width_label, height_label = self._screenshot_label.size().width(), self._screenshot_label.size().height()
         width_pixmap, height_pixmap = self._pixmap.size
         y_offset = 0
@@ -137,7 +137,7 @@ class App(QWidget):
             x_screen, y_screen = -1, -1
         for point in self._points.selected_points:
             self._points.update_pos(Point(point.idx, point.name, x_screen, y_screen))
-        QToolTip.showText(self.mapToGlobal(event.pos()), f"{x_screen}, {y_screen}", self)
+        QToolTip.showText(self.mapToGlobal(event.position().toPoint()), f"{x_screen}, {y_screen}", self)
 
     def resizeEvent(self, event: QResizeEvent):
         scaled_size = self._pixmap.pixmap.size()
@@ -184,7 +184,7 @@ class App(QWidget):
             num_points_before = len(self._points.points)
             self._points.load_from_file(filepath)
             num_points_after = len(self._points.points)
-            for i in range(num_points_after - num_points_before):
+            for i in range(max(num_points_after - num_points_before, 0)):
                 ch = CrosshairWidget(self._points[num_points_before + i], self._points, self._screenshot_label)
                 self._screenshot.screenshotted.connect(ch.on_update_screenshot)
             self._points_widget.setFixedHeight(

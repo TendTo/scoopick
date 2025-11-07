@@ -30,8 +30,8 @@ class PointsModel(QAbstractListModel):
 
     def load_from_file(self, filepath: str):
         with open(filepath, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        self._points = [Point(**point_data) for point_data in data["points"]]
+            data: dict = json.load(f)
+        self._points = [Point(**point_data) for point_data in data.get("points", [])]
         self.layoutChanged.emit()
 
     def to_file(self, filepath: str):
