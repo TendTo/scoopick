@@ -4,8 +4,6 @@ from PySide6.QtCore import QModelIndex, QSize, QRect, Slot
 
 from scoopick.model.points import PointsModel
 
-from ..model import Binding
-
 from ..data import Point
 
 
@@ -64,7 +62,10 @@ class CrosshairWidget(QWidget):
 
     def on_layout_update(self, *args):
         if self._idx not in self._points_model:
-            self.destroy()
+            print(f"CrosshairWidget: point {self._idx} no longer in model, destroying widget {id(self)}")
+            self._points_model.layoutChanged.disconnect(self.on_layout_update)
+            self._points_model.dataChanged.disconnect(self.on_point_update)
+            self.deleteLater()
         else:
             self.updateGeometry()
 
@@ -85,7 +86,10 @@ class CrosshairWidget(QWidget):
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        point = self._point
+        try:
+            point = self._point
+        except IndexError:
+            return
         if point.x < 0 or point.y < 0:
             return
 
