@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 """PySide6 port of the widgets/desktop/screenshot example from Qt v6.x"""
 
+from logging import getLogger
 import sys
 
 from PySide6 import QtGui
@@ -28,6 +29,8 @@ from .data import Point
 from .widgets import PointsWidget
 from .screenshot import Screenshot
 from .core import ScreenImage
+
+logger = getLogger(__name__)
 
 
 class App(QWidget):
@@ -158,6 +161,7 @@ class App(QWidget):
         print("Starting game with points:", self._points.points)
         self.hide()
         import time
+
         time.sleep(1)  # Wait for the app to hide
         Controller.click_at(Point(-1, "Start Button", 100, 200))
         Controller.type_text("Scoopick completed!")
@@ -190,14 +194,14 @@ class App(QWidget):
             self._points_widget.setFixedHeight(
                 self._points_widget.sizeHintForRow(0) * self._points.rowCount(0) + 2 * self._points_widget.frameWidth()
             )
-            print(f"Loaded points from {filepath}")
+            logger.info("Loaded points from %s", filepath)
 
     @Slot()
     def save_points(self):
         filepath, _ = QFileDialog.getSaveFileName(self, "Save points", "points.json", "JSON Files (*.json)")
         if filepath:
             self._points.to_file(filepath)
-            print(f"Saved points to {filepath}")
+            logger.info("Saved points to %s", filepath)
 
     def screenshot(self):
         self._screenshot.screenshot()
@@ -209,8 +213,6 @@ class App(QWidget):
             Qt.AspectRatioMode.KeepAspectRatio,
             Qt.TransformationMode.SmoothTransformation,
         )
-        print("scaled_pixelmap.size()", scaled_pixelmap.size())
-        print("self._screenshot_label.size()", self._screenshot_label.size())
         self._screenshot_label.setPixmap(scaled_pixelmap)
 
 

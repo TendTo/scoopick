@@ -1,10 +1,13 @@
 import os
 import sys
+from logging import getLogger
 
 
 from PySide6.QtCore import QObject, SLOT, Slot, Signal
 from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage
 from PySide6.QtGui import QGuiApplication, QPixmap
+
+logger = getLogger(__name__)
 
 
 class Screenshot(QObject):
@@ -24,13 +27,13 @@ class Screenshot(QObject):
 
     def _check_portal_response(self, response, error_message):
         if response.type() in (QDBusMessage.MessageType.ErrorMessage, QDBusMessage.MessageType.InvalidMessage):
-            print("Error taking screenshot:", error_message)
+            logger.error("Error taking screenshot: %s", error_message)
             return False
         return True
 
     @Slot("uint", "QVariantMap")
     def response_callback(self, status, response):
-        print(f"Received response: {status}, with results: {response}")
+        logger.debug("Received response: %d, with results: %s", status, response)
         if status == 0:
             image_path = response.get("uri", "").replace("file://", "")
             image = QPixmap()
@@ -43,7 +46,7 @@ class Screenshot(QObject):
         path = "/org/freedesktop/portal/desktop"
         iface = "org.freedesktop.portal.Screenshot"
 
-        print("Taking screenshot via portal...")
+        logger.info("Taking screenshot via portal...")
         iface = QDBusInterface(service, path, interface=iface, connection=QDBusConnection.sessionBus())
         screenshot_response = iface.call("Screenshot", "", {"interactive": False, "handle_token": "scoopick"})
         if not self._check_portal_response(screenshot_response, "Failed to call Screenshot method"):
