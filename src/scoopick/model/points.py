@@ -1,10 +1,13 @@
 import json
 from dataclasses import asdict, replace
+from logging import getLogger
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex
 from PySide6.QtGui import Qt
 
-from ..data.point import Point
+from ..data import PACKAGE_NAME, Point, Schema, validate_data
+
+logger = getLogger(PACKAGE_NAME)
 
 DEFAULT_POINTS = (
     Point(idx=0, name="Point 1", x=-1, y=-1, color=(0, 255, 0)),
@@ -28,11 +31,17 @@ class PointsModel(QAbstractListModel):
         points_instance.load_from_file(filepath)
         return points_instance
 
-    def load_from_file(self, filepath: str):
+    def load_from_file(self, filepath: str) -> bool:
         with open(filepath, "r", encoding="utf-8") as f:
-            data: dict = json.load(f)
+            try:
+                data: dict = json.load(f)
+            except json.JSONDecodeError:
+                return False
+        if not validate_data(Schema.POINTS, data):
+            return False
         self._points = [Point(**point_data) for point_data in data.get("points", [])]
         self.layoutChanged.emit()
+        return True
 
     def to_file(self, filepath: str):
         data = {"points": [asdict(point) for point in self._points]}

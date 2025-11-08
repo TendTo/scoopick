@@ -48,7 +48,7 @@ class Screenshot(QObject):
         path = "/org/freedesktop/portal/desktop"
         iface = "org.freedesktop.portal.Screenshot"
 
-        logger.info("Taking screenshot via portal...")
+        logger.debug("Taking screenshot via portal...")
         iface = QDBusInterface(service, path, interface=iface, connection=QDBusConnection.sessionBus())
         screenshot_response = iface.call("Screenshot", "", {"interactive": False, "handle_token": "scoopick"})
         if not self._check_portal_response(screenshot_response, "Failed to call Screenshot method"):

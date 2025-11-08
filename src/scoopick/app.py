@@ -1,10 +1,5 @@
-# Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-"""PySide6 port of the widgets/desktop/screenshot example from Qt v6.x"""
-
 import importlib.util
 import sys
-from logging import getLogger
 
 from PySide6 import QtGui
 from PySide6.QtCore import QRect, Qt, QTimer, Slot
@@ -22,22 +17,20 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from scoopick.core.controller import Controller
-from scoopick.widgets.crosshair import CrosshairWidget
-
 from .core import ScreenImage
 from .data import Point
 from .model import PointsModel
 from .screenshot import Screenshot
-from .widgets import PointsWidget
-
-logger = getLogger(__name__)
+from .util import init_logger
+from .widgets import CrosshairWidget, PointsWidget
 
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Scoopick")
+
+        self.logger = init_logger(app=self)
 
         self.addAction(
             QtGui.QAction(
@@ -47,8 +40,6 @@ class App(QWidget):
                 triggered=QApplication.instance().quit,
             )
         )
-
-        logger.setLevel("INFO")
 
         self._mod = None
         self._screenshot = Screenshot()
@@ -181,13 +172,13 @@ class App(QWidget):
     def start(self):
         print("Starting game with points:", self._points.points)
         if self._mod is None:
-            logger.error("No script loaded. Please load a script before starting the game.")
+            self.logger.error("No script loaded. Please load a script before starting the game.")
             return
         self.hide()
         try:
             self._mod.run(self._points.points)
         except Exception as e:
-            logger.error("Failed to run script: %s", e)
+            self.logger.error("Failed to run script: %s", e)
         self.show()
 
     @Slot()
@@ -207,13 +198,12 @@ class App(QWidget):
     def load_script(self):
         filepath, _ = QFileDialog.getOpenFileName(self, "Load script", "", "Python Files (*.py)")
         if filepath:
-            logger.info("Loading script from file '%s'", filepath)
             if "script" in sys.modules:
                 del sys.modules["script"]
             try:
                 importlib.invalidate_caches()
-            except Exception as e:
-                logger.error("Failed to invalidate caches: %s", e)
+            except Exception:
+                pass
             try:
                 # Import the input file as a module
                 spec = importlib.util.spec_from_file_location("script", filepath)
@@ -222,13 +212,15 @@ class App(QWidget):
                 spec.loader.exec_module(self._mod)
                 # Check if the module has a 'run' function
                 if not hasattr(self._mod, "run") or not callable(self._mod.run):
-                    logger.error("The configuration file must contain a function called 'run'")
+                    self.logger.error("The configuration file must contain a function called 'run'")
                     self._mod = None
+                else:
+                    self.logger.info("Loaded script from file '%s'", filepath)
             except Exception as e:
-                logger.error("Failed to load script: %s", e)
+                self.logger.error("Failed to load script: %s", e)
                 self._mod = None
         else:
-            logger.info("No file selected")
+            self.logger.info("No file selected")
             self._mod = None
         self._play_button.setEnabled(self._mod is not None)
 
@@ -237,7 +229,9 @@ class App(QWidget):
         filepath, _ = QFileDialog.getOpenFileName(self, "Load points", "", "JSON Files (*.json)")
         if filepath:
             num_points_before = len(self._points.points)
-            self._points.load_from_file(filepath)
+            if not self._points.load_from_file(filepath):
+                self.logger.warning("Invalid points data format")
+                return
             num_points_after = len(self._points.points)
             # The excess crosshair widgets will self-destruct on layout update
             # We just need to make sure to create new ones if we have more points than before
@@ -251,14 +245,14 @@ class App(QWidget):
             self._points_widget.setFixedHeight(
                 self._points_widget.sizeHintForRow(0) * self._points.rowCount(0) + 2 * self._points_widget.frameWidth()
             )
-            logger.info("Loaded points from %s", filepath)
+            self.logger.info("Loaded points from %s", filepath)
 
     @Slot()
     def save_points(self):
         filepath, _ = QFileDialog.getSaveFileName(self, "Save points", "points.json", "JSON Files (*.json)")
         if filepath:
             self._points.to_file(filepath)
-            logger.info("Saved points to %s", filepath)
+            self.logger.info("Saved points to %s", filepath)
 
     def screenshot(self):
         self._screenshot.screenshot()

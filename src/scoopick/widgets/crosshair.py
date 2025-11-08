@@ -4,11 +4,11 @@ from PySide6.QtCore import QModelIndex, QRect, QSize, Slot
 from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QLabel, QWidget
 
-logger = getLogger(__name__)
-
 from scoopick.model.points import PointsModel
 
-from ..data import Point
+from ..data import PACKAGE_NAME, Point
+
+logger = getLogger(PACKAGE_NAME)
 
 
 class CrosshairWidget(QWidget):

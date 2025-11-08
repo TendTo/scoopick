@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Scoopick point storage schema",
+  "description": "Schema for storing and loading points used by Scoopick.",
+  "type": "object",
+  "$defs": {
+    "point": {
+      "type": "object",
+      "required": ["idx", "name", "x", "y"],
+      "properties": {
+        "idx": {
+          "description": "Index of the point.",
+          "type": "integer"
+        },
+        "name": {
+          "description": "Name of the point.",
+          "type": "string"
+        },
+        "x": {
+          "description": "X coordinate of the point.",
+          "type": "integer"
+        },
+        "y": {
+          "description": "Y coordinate of the point.",
+          "type": "integer"
+        },
+        "color": {
+          "description": "Color of the point.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    }
+  },
+  "properties": {
+    "$schema": {
+      "description": "The path or URL to the JSON schema describing this file.",
+      "type": "string",
+      "format": "uri"
+    },
+    "points": {
+        "description": "List of points.",
+        "type": "array",
+        "items": {
+            "$ref": "#/$defs/point"
+        }
+    }
+  }
+}
