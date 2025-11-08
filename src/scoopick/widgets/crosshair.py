@@ -13,12 +13,12 @@ logger = getLogger(PACKAGE_NAME)
 
 class CrosshairWidget(QWidget):
 
-    def __init__(self, point: Point, points_model: PointsModel, *args, **kwargs):
+    def __init__(self, point: Point, points_model: PointsModel, current_pixmap: QPixmap | None = None, *args, **kwargs):
         super().__init__(*args, size=QSize(40, 40), **kwargs)
         self._idx = point.idx
         self._points_model = points_model
         self._label: QLabel = self.parent()
-        self._pixmap: QPixmap | None = None
+        self._pixmap = current_pixmap
 
         self._points_model.layoutChanged.connect(self.on_layout_update)
         self._points_model.dataChanged.connect(self.on_point_update)

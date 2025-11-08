@@ -67,9 +67,22 @@ class PointsModel(QAbstractListModel):
         self._selected_point = points
         # self.layoutChanged.emit()
 
-    def add_point(self, point: Point):
+    def add_point(self, point: Point | None = None) -> bool:
+        if point is None:
+            point = Point(idx=-1, name=f"Point {len(self._points) + 1}", x=-1, y=-1, color=(0, 0, 0))
         point.idx = len(self._points)
         self._points.append(replace(point))
+        self.layoutChanged.emit()
+        return True
+
+    def remove_selected_points(self):
+        idxs = [point.idx for point in self._selected_point]
+        for point in self._selected_point:
+            self._points.remove(point)
+        # Re-index points
+        for idx, point in enumerate(self._points):
+            point.idx = idx
+        self._selected_point = tuple(self._points[idx] for idx in idxs if idx < len(self._points))
         self.layoutChanged.emit()
 
     def set_points(self, points: list[Point]):
@@ -78,6 +91,9 @@ class PointsModel(QAbstractListModel):
 
     def remove_point(self, point: Point):
         self._points.remove(point)
+        # Re-index points
+        for idx, point in enumerate(self._points):
+            point.idx = idx
         self.layoutChanged.emit()
 
     def __getitem__(self, index: int) -> Point:

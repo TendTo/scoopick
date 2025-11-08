@@ -46,6 +46,7 @@ class App(QWidget):
         self._screenshot.screenshotted.connect(self.on_screenshotted)
 
         self._points = PointsModel()
+        self._pixmap = ScreenImage(QPixmap())
 
         screen_geometry: QRect = self.screen().geometry()
 
@@ -60,20 +61,17 @@ class App(QWidget):
         main_layout.addWidget(self._screenshot_label)
 
         points_group_box = QGroupBox("Points", self)
-        points_layout = QVBoxLayout(points_group_box)
-        points_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetMinimumSize)
+        points_layout = QHBoxLayout(points_group_box)
+        points_layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetMinimumSize)
         self._points_widget = PointsWidget()
         self._points_widget.setModel(self._points)
-        # self._points_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self._points_widget.setFixedHeight(
             self._points_widget.sizeHintForRow(0) * min(self._points.rowCount(0), 4)
             + 2 * self._points_widget.frameWidth()
         )
-        # self._points_widget.setVerticalScrollBar(QScrollBar(self._points_widget))
-        # self._points_widget.setVerticalScrollMode(QListWidget.ScrollMode.ScrollPerPixel)
         self._points_widget.point_selected.connect(self.on_point_selected)
         for point in self._points:
-            ch = CrosshairWidget(point, self._points, self._screenshot_label)
+            ch = CrosshairWidget(point, self._points, self._pixmap.pixmap, self._screenshot_label)
             self._screenshot.screenshotted.connect(ch.on_update_screenshot)
 
         points_group_box.setFixedHeight(
@@ -82,7 +80,21 @@ class App(QWidget):
             + points_layout.contentsMargins().top()
             + points_layout.contentsMargins().bottom()
         )
+
+        points_buttons_layout = QVBoxLayout(points_group_box)
+        # Add point button
+        self._add_point_button = QPushButton("Add Point", self)
+        self._add_point_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_A)
+        self._add_point_button.clicked.connect(self.add_point)
+        points_buttons_layout.addWidget(self._add_point_button)
+        # Remove active points button
+        self._remove_point_button = QPushButton("Remove Point", self)
+        self._remove_point_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_D)
+        self._remove_point_button.clicked.connect(lambda e: self._points.remove_selected_points())
+        points_buttons_layout.addWidget(self._remove_point_button)
+
         points_layout.addWidget(self._points_widget)
+        points_layout.addLayout(points_buttons_layout)
         main_layout.addWidget(points_group_box)
 
         buttons_layout = QHBoxLayout()
@@ -110,8 +122,6 @@ class App(QWidget):
         buttons_layout.addStretch()
 
         main_layout.addLayout(buttons_layout)
-
-        self._pixmap = ScreenImage(QPixmap())
 
     def _mouse_to_screen_position(self, event: QMouseEvent):
         if self._pixmap.is_null:
@@ -239,6 +249,7 @@ class App(QWidget):
                 ch = CrosshairWidget(
                     self._points[num_points_before + i],
                     self._points,
+                    self._pixmap.pixmap,
                     self._screenshot_label,
                 )
                 self._screenshot.screenshotted.connect(ch.on_update_screenshot)
@@ -253,6 +264,17 @@ class App(QWidget):
         if filepath:
             self._points.to_file(filepath)
             self.logger.info("Saved points to %s", filepath)
+
+    @Slot()
+    def add_point(self):
+        self._points.add_point()
+        ch = CrosshairWidget(
+            self._points[-1],
+            self._points,
+            self._pixmap.pixmap,
+            self._screenshot_label,
+        )
+        self._screenshot.screenshotted.connect(ch.on_update_screenshot)
 
     def screenshot(self):
         self._screenshot.screenshot()
