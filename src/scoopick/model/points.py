@@ -40,6 +40,7 @@ class PointsModel(QAbstractListModel):
         if not validate_data(Schema.POINTS, data):
             return False
         self._points = [Point(**point_data) for point_data in data.get("points", [])]
+        self._reindex_points()
         self.layoutChanged.emit()
         return True
 
@@ -79,9 +80,7 @@ class PointsModel(QAbstractListModel):
         idxs = [point.idx for point in self._selected_point]
         for point in self._selected_point:
             self._points.remove(point)
-        # Re-index points
-        for idx, point in enumerate(self._points):
-            point.idx = idx
+        self._reindex_points()
         self._selected_point = tuple(self._points[idx] for idx in idxs if idx < len(self._points))
         self.layoutChanged.emit()
 
@@ -91,10 +90,12 @@ class PointsModel(QAbstractListModel):
 
     def remove_point(self, point: Point):
         self._points.remove(point)
-        # Re-index points
+        self._reindex_points()
+        self.layoutChanged.emit()
+
+    def _reindex_points(self):
         for idx, point in enumerate(self._points):
             point.idx = idx
-        self.layoutChanged.emit()
 
     def __getitem__(self, index: int) -> Point:
         return self._points[index]

@@ -6,7 +6,8 @@
   "$defs": {
     "point": {
       "type": "object",
-      "required": ["idx", "name", "x", "y"],
+      "additionalProperties": false,
+      "required": ["name", "x", "y"],
       "properties": {
         "idx": {
           "description": "Index of the point.",

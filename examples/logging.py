@@ -6,5 +6,6 @@ if TYPE_CHECKING:
 
 logger = getLogger("scoopick")
 
+
 def run(points: "list[Point]"):
     logger.info("Running script with points: %s", points)

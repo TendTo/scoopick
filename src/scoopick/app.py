@@ -64,24 +64,14 @@ class App(QWidget):
         points_layout = QHBoxLayout(points_group_box)
         points_layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetMinimumSize)
         self._points_widget = PointsWidget()
+        self._points_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self._points_widget.setModel(self._points)
-        self._points_widget.setFixedHeight(
-            self._points_widget.sizeHintForRow(0) * min(self._points.rowCount(0), 4)
-            + 2 * self._points_widget.frameWidth()
-        )
         self._points_widget.point_selected.connect(self.on_point_selected)
         for point in self._points:
             ch = CrosshairWidget(point, self._points, self._pixmap.pixmap, self._screenshot_label)
             self._screenshot.screenshotted.connect(ch.on_update_screenshot)
 
-        points_group_box.setFixedHeight(
-            self._points_widget.height()
-            + points_layout.spacing() * 2
-            + points_layout.contentsMargins().top()
-            + points_layout.contentsMargins().bottom()
-        )
-
-        points_buttons_layout = QVBoxLayout(points_group_box)
+        points_buttons_layout = QVBoxLayout()
         # Add point button
         self._add_point_button = QPushButton("Add Point", self)
         self._add_point_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_A)
@@ -253,9 +243,6 @@ class App(QWidget):
                     self._screenshot_label,
                 )
                 self._screenshot.screenshotted.connect(ch.on_update_screenshot)
-            self._points_widget.setFixedHeight(
-                self._points_widget.sizeHintForRow(0) * self._points.rowCount(0) + 2 * self._points_widget.frameWidth()
-            )
             self.logger.info("Loaded points from %s", filepath)
 
     @Slot()

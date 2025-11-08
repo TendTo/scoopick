@@ -1,0 +1,148 @@
+{
+  "points": [
+    {
+      "name": "skip_1_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 85, 85]
+    },
+    {
+      "name": "skip_2_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 85, 170]
+    },
+    {
+      "name": "skip_2_icon_under_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 85, 255]
+    },
+    {
+      "name": "skip_1_btn_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 170, 85]
+    },
+    {
+      "name": "skip_2_btn_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 170, 170]
+    },
+    {
+      "name": "skip_arcane_pack_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 170, 255]
+    },
+    {
+      "name": "new_game_btn_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 255, 85]
+    },
+    {
+      "name": "play_btn_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 255, 170]
+    },
+    {
+      "name": "options_btn_pos",
+      "x": 0,
+      "y": 0,
+      "color": [85, 255, 255]
+    },
+    {
+      "name": "card_1_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 85, 85]
+    },
+    {
+      "name": "card_2_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 85, 170]
+    },
+    {
+      "name": "card_3_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 85, 255]
+    },
+    {
+      "name": "card_4_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 170, 85]
+    },
+    {
+      "name": "card_5_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 170, 170]
+    },
+    {
+      "name": "card_1_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 170, 255]
+    },
+    {
+      "name": "card_2_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 255, 85]
+    },
+    {
+      "name": "card_3_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 255, 170]
+    },
+    {
+      "name": "card_4_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [170, 255, 255]
+    },
+    {
+      "name": "card_5_icon_pos",
+      "x": 0,
+      "y": 0,
+      "color": [255, 85, 85]
+    },
+    {
+      "name": "card_1_use_pos",
+      "x": 0,
+      "y": 0,
+      "color": [255, 85, 170]
+    },
+    {
+      "name": "card_2_use_pos",
+      "x": 0,
+      "y": 0,
+      "color": [255, 85, 255]
+    },
+    {
+      "name": "card_3_use_pos",
+      "x": 0,
+      "y": 0,
+      "color": [255, 170, 85]
+    },
+    {
+      "name": "card_4_use_pos",
+      "x": 0,
+      "y": 0,
+      "color": [255, 170, 170]
+    },
+    {
+      "name": "card_5_use_pos",
+      "x": 0,
+      "y": 0,
+      "color": [255, 170, 255]
+    }
+  ]
+}
