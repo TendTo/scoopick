@@ -1,5 +1,6 @@
 import keyboard
 from keyboard import mouse
+
 from ..data import Point
 
 

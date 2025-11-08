@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 """PySide6 port of the widgets/desktop/screenshot example from Qt v6.x"""
 
-from logging import getLogger
+import importlib.util
 import sys
+from logging import getLogger
 
 from PySide6 import QtGui
 from PySide6.QtCore import QRect, Qt, QTimer, Slot
@@ -24,11 +25,11 @@ from PySide6.QtWidgets import (
 from scoopick.core.controller import Controller
 from scoopick.widgets.crosshair import CrosshairWidget
 
-from .model import PointsModel
-from .data import Point
-from .widgets import PointsWidget
-from .screenshot import Screenshot
 from .core import ScreenImage
+from .data import Point
+from .model import PointsModel
+from .screenshot import Screenshot
+from .widgets import PointsWidget
 
 logger = getLogger(__name__)
 
@@ -38,6 +39,18 @@ class App(QWidget):
         super().__init__()
         self.setWindowTitle("Scoopick")
 
+        self.addAction(
+            QtGui.QAction(
+                "Quit",
+                self,
+                shortcut=Qt.Modifier.CTRL | Qt.Key.Key_W,
+                triggered=QApplication.instance().quit,
+            )
+        )
+
+        logger.setLevel("INFO")
+
+        self._mod = None
         self._screenshot = Screenshot()
         self._screenshot.screenshotted.connect(self.on_screenshotted)
 
@@ -85,7 +98,12 @@ class App(QWidget):
         self._play_button = QPushButton("Start game", self)
         self._play_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_Enter)
         self._play_button.clicked.connect(self.start)
+        self._play_button.setEnabled(False)
         buttons_layout.addWidget(self._play_button)
+        self._load_script_button = QPushButton("Load script", self)
+        self._load_script_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_L)
+        self._load_script_button.clicked.connect(self.load_script)
+        buttons_layout.addWidget(self._load_script_button)
         self._update_button = QPushButton("Update screenshot", self)
         self._update_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_S)
         self._update_button.clicked.connect(self.request_screenshot)
@@ -98,10 +116,6 @@ class App(QWidget):
         self._save_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_S)
         self._save_button.clicked.connect(self.save_points)
         buttons_layout.addWidget(self._save_button)
-        quit_screenshot_button = QPushButton("Quit", self)
-        quit_screenshot_button.setShortcut(Qt.Modifier.CTRL | Qt.Key.Key_W)
-        quit_screenshot_button.clicked.connect(self.close)
-        buttons_layout.addWidget(quit_screenshot_button)
         buttons_layout.addStretch()
 
         main_layout.addLayout(buttons_layout)
@@ -112,7 +126,10 @@ class App(QWidget):
         if self._pixmap.is_null:
             return -1, -1
         x, y = event.position().toPoint().x(), event.position().toPoint().y()
-        width_label, height_label = self._screenshot_label.size().width(), self._screenshot_label.size().height()
+        width_label, height_label = (
+            self._screenshot_label.size().width(),
+            self._screenshot_label.size().height(),
+        )
         width_pixmap, height_pixmap = self._pixmap.size
         y_offset = 0
         x_offset = 0
@@ -140,7 +157,11 @@ class App(QWidget):
             x_screen, y_screen = -1, -1
         for point in self._points.selected_points:
             self._points.update_pos(Point(point.idx, point.name, x_screen, y_screen))
-        QToolTip.showText(self.mapToGlobal(event.position().toPoint()), f"{x_screen}, {y_screen}", self)
+        QToolTip.showText(
+            self.mapToGlobal(event.position().toPoint()),
+            f"{x_screen}, {y_screen}",
+            self,
+        )
 
     def resizeEvent(self, event: QResizeEvent):
         scaled_size = self._pixmap.pixmap.size()
@@ -159,13 +180,14 @@ class App(QWidget):
     @Slot()
     def start(self):
         print("Starting game with points:", self._points.points)
+        if self._mod is None:
+            logger.error("No script loaded. Please load a script before starting the game.")
+            return
         self.hide()
-        import time
-
-        time.sleep(1)  # Wait for the app to hide
-        Controller.click_at(Point(-1, "Start Button", 100, 200))
-        Controller.type_text("Scoopick completed!")
-        time.sleep(1)  # Wait for the app to hide
+        try:
+            self._mod.run(self._points.points)
+        except Exception as e:
+            logger.error("Failed to run script: %s", e)
         self.show()
 
     @Slot()
@@ -182,14 +204,49 @@ class App(QWidget):
         self.show()
 
     @Slot()
+    def load_script(self):
+        filepath, _ = QFileDialog.getOpenFileName(self, "Load script", "", "Python Files (*.py)")
+        if filepath:
+            logger.info("Loading script from file '%s'", filepath)
+            if "script" in sys.modules:
+                del sys.modules["script"]
+            try:
+                importlib.invalidate_caches()
+            except Exception as e:
+                logger.error("Failed to invalidate caches: %s", e)
+            try:
+                # Import the input file as a module
+                spec = importlib.util.spec_from_file_location("script", filepath)
+                self._mod = importlib.util.module_from_spec(spec)
+                sys.modules["script"] = self._mod
+                spec.loader.exec_module(self._mod)
+                # Check if the module has a 'run' function
+                if not hasattr(self._mod, "run") or not callable(self._mod.run):
+                    logger.error("The configuration file must contain a function called 'run'")
+                    self._mod = None
+            except Exception as e:
+                logger.error("Failed to load script: %s", e)
+                self._mod = None
+        else:
+            logger.info("No file selected")
+            self._mod = None
+        self._play_button.setEnabled(self._mod is not None)
+
+    @Slot()
     def load_points(self):
         filepath, _ = QFileDialog.getOpenFileName(self, "Load points", "", "JSON Files (*.json)")
         if filepath:
             num_points_before = len(self._points.points)
             self._points.load_from_file(filepath)
             num_points_after = len(self._points.points)
+            # The excess crosshair widgets will self-destruct on layout update
+            # We just need to make sure to create new ones if we have more points than before
             for i in range(max(num_points_after - num_points_before, 0)):
-                ch = CrosshairWidget(self._points[num_points_before + i], self._points, self._screenshot_label)
+                ch = CrosshairWidget(
+                    self._points[num_points_before + i],
+                    self._points,
+                    self._screenshot_label,
+                )
                 self._screenshot.screenshotted.connect(ch.on_update_screenshot)
             self._points_widget.setFixedHeight(
                 self._points_widget.sizeHintForRow(0) * self._points.rowCount(0) + 2 * self._points_widget.frameWidth()

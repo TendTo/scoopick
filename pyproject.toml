@@ -42,3 +42,11 @@ where = ["src"]
 minversion = "6.0"
 addopts = "-q"
 testpaths = ["tests"]
+
+[tool.black]
+line-length = 120
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+

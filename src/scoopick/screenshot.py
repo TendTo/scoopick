@@ -2,8 +2,7 @@ import os
 import sys
 from logging import getLogger
 
-
-from PySide6.QtCore import QObject, SLOT, Slot, Signal
+from PySide6.QtCore import SLOT, QObject, Signal, Slot
 from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage
 from PySide6.QtGui import QGuiApplication, QPixmap
 
@@ -26,7 +25,10 @@ class Screenshot(QObject):
             self.screenshotted.emit(screen.grabWindow(0))
 
     def _check_portal_response(self, response, error_message):
-        if response.type() in (QDBusMessage.MessageType.ErrorMessage, QDBusMessage.MessageType.InvalidMessage):
+        if response.type() in (
+            QDBusMessage.MessageType.ErrorMessage,
+            QDBusMessage.MessageType.InvalidMessage,
+        ):
             logger.error("Error taking screenshot: %s", error_message)
             return False
         return True

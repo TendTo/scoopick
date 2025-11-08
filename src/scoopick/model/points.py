@@ -1,10 +1,10 @@
+import json
+from dataclasses import asdict, replace
+
 from PySide6.QtCore import QAbstractListModel, QModelIndex
 from PySide6.QtGui import Qt
 
 from ..data.point import Point
-from dataclasses import replace, asdict
-import json
-
 
 DEFAULT_POINTS = (
     Point(idx=0, name="Point 1", x=-1, y=-1, color=(0, 255, 0)),
@@ -41,7 +41,11 @@ class PointsModel(QAbstractListModel):
 
     def data(self, index: QModelIndex, role=...):
         point = self._points[index.row()]
-        if role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.WhatsThisRole, Qt.ItemDataRole.DisplayRole):
+        if role in (
+            Qt.ItemDataRole.ToolTipRole,
+            Qt.ItemDataRole.WhatsThisRole,
+            Qt.ItemDataRole.DisplayRole,
+        ):
             return str(point)
         if role == Qt.ItemDataRole.UserRole:
             return point

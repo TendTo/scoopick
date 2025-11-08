@@ -1,11 +1,14 @@
-from typing import Callable, TypeVar, Generic
+from typing import Callable, Generic, TypeVar
 
 T = TypeVar("T")
 
 
 class Binding(Generic[T]):
     def __init__(
-        self, getter: Callable[[], T], setter: Callable[[T], None], updater: Callable[[], None] = lambda: None
+        self,
+        getter: Callable[[], T],
+        setter: Callable[[T], None],
+        updater: Callable[[], None] = lambda: None,
     ):
         self._getter = getter
         self._setter = setter

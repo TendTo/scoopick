@@ -1,4 +1,4 @@
-from PySide6.QtGui import QMouseEvent, QPixmap, QIcon, QResizeEvent
+from PySide6.QtGui import QIcon, QPixmap
 
 from ..data import Point
 

@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QListView
 from PySide6.QtCore import QItemSelection, QModelIndex, Qt, Signal
+from PySide6.QtWidgets import QListView
 
 from scoopick.data.point import Point
 

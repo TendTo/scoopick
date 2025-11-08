@@ -1,7 +1,8 @@
-from PySide6.QtWidgets import QLabel, QWidget
-from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
-from PySide6.QtCore import QModelIndex, QSize, QRect, Slot
 from logging import getLogger
+
+from PySide6.QtCore import QModelIndex, QRect, QSize, Slot
+from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
+from PySide6.QtWidgets import QLabel, QWidget
 
 logger = getLogger(__name__)
 
@@ -44,7 +45,10 @@ class CrosshairWidget(QWidget):
         if self._pixmap is None or self._pixmap.isNull():
             return -1, -1
         lw, lh = self._label.size().width(), self._label.size().height()
-        scaled_pixmap_w, scaled_pixmap_h = self._label.pixmap().size().width(), self._label.pixmap().size().height()
+        scaled_pixmap_w, scaled_pixmap_h = (
+            self._label.pixmap().size().width(),
+            self._label.pixmap().size().height(),
+        )
         pixmap_w, pixmap_h = self._pixmap.size().width(), self._pixmap.size().height()
         scale_x = scaled_pixmap_w / pixmap_w
         scale_y = scaled_pixmap_h / pixmap_h
@@ -67,7 +71,11 @@ class CrosshairWidget(QWidget):
 
     def on_layout_update(self, *args):
         if self._idx not in self._points_model:
-            logger.debug("CrosshairWidget: point %d no longer in model, destroying widget %d", self._idx, id(self))
+            logger.debug(
+                "CrosshairWidget: point %d no longer in model, destroying widget %d",
+                self._idx,
+                id(self),
+            )
             self._points_model.layoutChanged.disconnect(self.on_layout_update)
             self._points_model.dataChanged.disconnect(self.on_point_update)
             self.deleteLater()
@@ -77,19 +85,33 @@ class CrosshairWidget(QWidget):
     def on_point_update(self, idx_from: QModelIndex, idx_to: QModelIndex):
         # Only update if our point is in the updated range
         if idx_from.row() <= self._idx <= idx_to.row():
-            logger.debug("CrosshairWidget: point %d updated, updating widget %d", self._idx, id(self))
+            logger.debug(
+                "CrosshairWidget: point %d updated, updating widget %d",
+                self._idx,
+                id(self),
+            )
             self.updateGeometry()
 
     def updateGeometry(self):
         super().updateGeometry()
         x_label, y_label = self._from_screen_to_label()
         if x_label < 0 or y_label < 0:
-            logger.debug("CrosshairWidget: point %d is out of bounds, hiding widget %d", self._idx, id(self))
+            logger.debug(
+                "CrosshairWidget: point %d is out of bounds, hiding widget %d",
+                self._idx,
+                id(self),
+            )
             self.hide()
         else:
             self.show()
             self.move(x_label - self.width() // 2, y_label - self.height() // 2)
-            logger.debug("CrosshairWidget: point %d moved to (%d, %d) in widget %d", self._idx, x_label, y_label, id(self))
+            logger.debug(
+                "CrosshairWidget: point %d moved to (%d, %d) in widget %d",
+                self._idx,
+                x_label,
+                y_label,
+                id(self),
+            )
 
     def paintEvent(self, event):
         super().paintEvent(event)
