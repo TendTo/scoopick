@@ -2,7 +2,7 @@ import os
 import sys
 from logging import getLogger
 
-from PySide6.QtCore import SLOT, QObject, Signal, Slot
+from PySide6.QtCore import SLOT, QEventLoop, QObject, Signal, Slot
 from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusMessage
 from PySide6.QtGui import QGuiApplication, QPixmap
 
@@ -11,11 +11,14 @@ logger = getLogger(__name__)
 
 class Screenshot(QObject):
     screenshotted = Signal(QPixmap, name="screenshotted")
+    _screenshotted = Signal(QPixmap, name="_screenshotted")
 
     def __init__(self):
         super().__init__()
         # Check if running on Wayland and on Linux
         self._wayland = "WAYLAND_DISPLAY" in os.environ and sys.platform.startswith("linux")
+        self._last_screenshot = None
+        self._sync_mode = False
 
     def screenshot(self):
         if self._wayland:
@@ -41,7 +44,11 @@ class Screenshot(QObject):
             image = QPixmap()
             image.load(image_path)
             os.remove(image_path)
-            self.screenshotted.emit(image)
+            if not self._sync_mode:
+                self.screenshotted.emit(image)
+            else:
+                self._last_screenshot = image
+                self._screenshotted.emit(image)
 
     def _screenshot_wayland(self):
         service = "org.freedesktop.portal.Desktop"
@@ -62,3 +69,21 @@ class Screenshot(QObject):
             self,
             SLOT("response_callback(uint, QVariantMap)"),
         )
+
+    def screenshot_sync(self) -> QPixmap:
+        self._last_screenshot = None
+        self._sync_mode = True
+        try:
+            if self._wayland:
+                self._screenshot_wayland()
+                loop = QEventLoop()
+                self._screenshotted.connect(loop.quit)
+                loop.exec()
+                self._screenshotted.disconnect(loop.quit)
+                self._sync_mode = False
+                return self._last_screenshot
+
+            screen = QGuiApplication.primaryScreen()
+        finally:
+            self._sync_mode = False
+        return screen.grabWindow(0)

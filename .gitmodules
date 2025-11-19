@@ -1,0 +1,3 @@
+[submodule "examples/wordle-solver"]
+	path = examples/wordle_solver
+	url = https://github.com/joshstephenson/Wordle-Solver.git

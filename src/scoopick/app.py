@@ -170,13 +170,13 @@ class App(QWidget):
 
     @Slot()
     def start(self):
-        print("Starting game with points:", self._points.points)
+        self.logger.info("Starting game with %d points", len(self._points.points))
         if self._mod is None:
             self.logger.error("No script loaded. Please load a script before starting the game.")
             return
         self.hide()
         try:
-            self._mod.run(self._points.points)
+            self._mod.run(self._points.points, self._screenshot.screenshot_sync)
         except Exception as e:
             self.logger.error("Failed to run script: %s", e)
         self.show()

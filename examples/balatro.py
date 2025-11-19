@@ -7,6 +7,8 @@ from pynput.mouse import Button, Controller
 
 if TYPE_CHECKING:
     from scoopick.data import Point
+    from typing import Callable
+    from PySide6.QtGui import QPixmap
 
 logger = getLogger("scoopick")
 
@@ -163,7 +165,7 @@ class BalatroRunner:
         self.reset_game()
 
 
-def run(points: "list[Point]"):
+def run(points: "list[Point]", capture_screenshot: "Callable[[], QPixmap]"):
     logger.info("Waiting 10 sec")
     time.sleep(10)
     balatro = BalatroRunner(points)
