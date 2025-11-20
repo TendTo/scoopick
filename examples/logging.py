@@ -2,9 +2,11 @@ from logging import getLogger
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from scoopick.data import Point
     from typing import Callable
+
     from PySide6.QtGui import QPixmap
+
+    from scoopick.data import Point
 
 logger = getLogger("scoopick")
 

@@ -6,9 +6,11 @@ from pyautogui import pixel
 from pynput.mouse import Button, Controller
 
 if TYPE_CHECKING:
-    from scoopick.data import Point
     from typing import Callable
+
     from PySide6.QtGui import QPixmap
+
+    from scoopick.data import Point
 
 logger = getLogger("scoopick")
 

@@ -1,20 +1,29 @@
+import os
+import sys
 import time
 from logging import getLogger
 from typing import TYPE_CHECKING
-import os
-from pyautogui import pixel
-from pynput.keyboard import Key, Controller
-import sys
+
+from pynput.keyboard import Controller, Key
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(file_path)
 
+# Weave the method to load words from the correct path
+from wordle_solver.wordle_solver import Dictionary
+
+original_get_words = Dictionary.get_words
+Dictionary.get_words = lambda self, filename: original_get_words(
+    self, os.path.join(file_path, "wordle_solver", filename)
+)
 from wordle_solver.wordle_solver import Solver
 
 if TYPE_CHECKING:
-    from scoopick.data import Point
     from typing import Callable
+
     from PySide6.QtGui import QPixmap
+
+    from scoopick.data import Point
 
 
 logger = getLogger("scoopick")
